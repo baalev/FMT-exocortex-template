@@ -541,51 +541,62 @@ iwe_repo_dirs() {
   done
 }
 
-# --- Section: Новые задачи в репозиториях (issue sweep, 2 дня) ---
-# Сигнальный канал из day-open/SKILL.md:54 (раньше был только в спеке, не в коде).
-# Ленивый: кэш 1ч + fallback при недоступности gh — не ломает pipeline (требование peer-сессии 2026-06-04-32).
-# Каждый `gh issue list` ограничен $ISSUE_SWEEP_TIMEOUT секунд (issue #241: на WSL2
-# один зависший сетевой вызов без тайм-бокса вешал весь sweep на 180с+ без вывода).
+# --- Section: Новые задачи в репозиториях (Forgejo issue sweep, 2 дня) ---
+# Сигнальный канал из day-open/SKILL.md:54. Ленивый: кэш 1ч + fallback при
+# недоступности Forgejo — не ломает pipeline.
+# Миграция с GitHub (`gh`) на локальный Forgejo: обзор идёт по репозиториям,
+# у которых есть remote `forgejo`. Каждый запрос ограничен $ISSUE_SWEEP_TIMEOUT
+# секунд через curl --max-time (issue #241: зависший сетевой вызов без тайм-бокса
+# вешал весь sweep на 180с+ без вывода).
 render_repo_issues() {
-  command -v gh >/dev/null 2>&1 || { echo "_gh CLI недоступен — обзор задач пропущен._"; return; }
+  local forgejo_url="${IWE_FORGEJO_URL:-http://10.8.50.50:3000}"
+  local token="${IWE_FORGEJO_TOKEN:-}"
+  if [ -z "$token" ] && [ -f "${HOME:-$HOME}/.iwe-forgejo-token" ]; then
+    token=$(cat "${HOME:-$HOME}/.iwe-forgejo-token" 2>/dev/null)
+  fi
+  command -v curl >/dev/null 2>&1 || { echo "_curl недоступен — обзор задач пропущен._"; return; }
+  [ -n "$token" ] || { echo "_Forgejo-токен не настроен (IWE_FORGEJO_TOKEN) — обзор задач пропущен._"; return; }
+  command -v jq >/dev/null 2>&1 || { echo "_jq недоступен — обзор задач пропущен._"; return; }
   local cache="/tmp/iwe-issue-sweep-$DATE.md"
   if [ -f "$cache" ] && [ -n "$(find "$cache" -mmin -60 2>/dev/null)" ]; then
     cat "$cache"; return
   fi
-  # issue #241 (остаточная дыра): gh auth status делает сетевой запрос к GitHub API
-  # для валидации токена — на WSL2 с проблемной сетью может зависнуть тем же классом
-  # бага, что уже закрыт для gh issue list ниже. run_bounded не пробрасывает exit-код
-  # обёрнутой команды (возвращает статус cat/rm) — поэтому результат передаём через
-  # маркер в stdout, а не через "if ! run_bounded ...".
-  local auth_ok
-  auth_ok=$(run_bounded "${ISSUE_SWEEP_TIMEOUT:-10}" bash -c "gh auth status >/dev/null 2>&1 && echo ok")
-  if [ "$auth_ok" != "ok" ]; then
-    echo "_gh не авторизован или GitHub недоступен — обзор задач пропущен (проверьте \`gh auth login\` и сеть)._"; return
+  # Доступность Forgejo API (bounded).
+  local fapi_ok
+  fapi_ok=$(run_bounded "${ISSUE_SWEEP_TIMEOUT:-10}" bash -c \
+    "curl -fsS -o /dev/null -H 'Authorization: token $token' '$forgejo_url/api/v1/version' >/dev/null 2>&1 && echo ok")
+  if [ "$fapi_ok" != "ok" ]; then
+    echo "_Forgejo недоступен ($forgejo_url) — обзор задач пропущен (проверьте сеть и токен)._"; return
   fi
   local since
   since=$(date -v-2d +%Y-%m-%d 2>/dev/null || date -d "2 days ago" +%Y-%m-%d 2>/dev/null)
   [ -z "$since" ] && { echo "_не удалось вычислить дату фильтра — пропуск._"; return; }
-  local out="" any=0 repo slug rows stale_count stale_url
+  local out="" any=0 repo slug owner rows stale_count stale_url
   while IFS= read -r repo; do
-    git -C "$repo" remote get-url origin 2>/dev/null | grep -qi github || continue
+    git -C "$repo" remote 2>/dev/null | grep -qx forgejo || continue
     slug=$(basename "$repo")
+    owner=$(git -C "$repo" remote get-url forgejo 2>/dev/null \
+            | sed -E 's#^.*[:/]([^/:]+)/[^/]+(\.git)?$#\1#')
+    [ -n "$owner" ] || owner="${IWE_FORGEJO_OWNER:-alex}"
     # New issues (last 2 days)
     rows=$(run_bounded "${ISSUE_SWEEP_TIMEOUT:-10}" bash -c \
-      "cd '$repo' && gh issue list --state open --search 'created:>=$since' \
-       --json number,title --jq '.[] | \"| #\(.number) | \(.title) |\"'")
+      "curl -fsS -H 'Authorization: token $token' \
+       '$forgejo_url/api/v1/repos/$owner/$slug/issues?state=open&type=issues&limit=50' 2>/dev/null \
+       | jq -r --arg since '$since' '.[] | select(.created_at >= (\$since + \"T00:00:00Z\")) | \"| #\(.number) | \(.title) |\"'")
     if [ -n "$rows" ]; then
       out="${out}\n**${slug} (новые):**\n\n| # | Заголовок |\n|---|---|\n${rows}\n"
       any=1
     fi
-    # Stale issues: open + labeled stale-unattended (pipeline gap fix, issue #pipeline)
+    # Stale issues: open + labeled stale-unattended.
+    # NB: Forgejo игнорирует labels= для отсутствующей метки (возвращает все open) —
+    # поэтому метку фильтруем на клиенте через jq, а не параметром API.
     stale_count=$(run_bounded "${ISSUE_SWEEP_TIMEOUT:-10}" bash -c \
-      "cd '$repo' && gh issue list --state open --label 'stale-unattended' --json number --jq 'length'")
+      "curl -fsS -H 'Authorization: token $token' \
+       '$forgejo_url/api/v1/repos/$owner/$slug/issues?state=open&type=issues&limit=50' 2>/dev/null \
+       | jq '[.[] | select(any(.labels[]?; .name == \"stale-unattended\"))] | length'")
     [ -z "$stale_count" ] && stale_count=0
     if [ "${stale_count:-0}" -gt 0 ] 2>/dev/null; then
-      local remote_url
-      remote_url=$(git -C "$repo" remote get-url origin 2>/dev/null \
-                   | sed 's|git@github.com:|https://github.com/|; s|\.git$||')
-      stale_url="${remote_url}/issues?q=is:open+label:stale-unattended"
+      stale_url="$forgejo_url/$owner/$slug/issues?q=is:open+label:stale-unattended"
       out="${out}\n⚠️ **${slug}:** ${stale_count} старых issues без движения → [открыть фильтр](${stale_url})\n"
       any=1
     fi
