@@ -145,12 +145,26 @@ Refs: WP-NNN
 
 
 
-## [Unreleased]
+
+## [Unreleased] — обновлено 2026-09-15
 
 ### Fixed
 
 - `f896701` fix(skills): personal-guide -> DS-personal-guide в шаблонных скиллах (#585)
   - `personal-guide-start`, `personal-guide-render`, `lesson-close`, `week-close-pilot` — литеральное имя личного репозитория новых пользователей переведено на канон `DS-personal-guide`; `docs/SETUP-GUIDE.md` и её тест-контракт обновлены вместе с манифестом
+- `1a91fc1` fix(repo): исполнимость .sh и .githooks (режим 755) — хук pre-commit больше не блокирует любой коммит с `.sh`
+- `5187911` fix(close-wp): архивный контекст РП засеивается содержимым inbox — архивный файл больше не создаётся пустым
+- `729a26f` fix(scripts): `settings-promote.sh` определяет каталог шаблона из своего расположения — PROMOTE-DRY-RUN проходит в чистом окружении и на нестандартном корне рабочего пространства
+
+### Changed
+
+- `bc56762` Add .gitattributes: keep bash scripts with LF
+- `032c7c7` Initial import of FMT-exocortex-template
+
+> Внимание: `scripts/changelog-append.sh` перегенерирует блок [Unreleased] из истории
+> локального репозитория и затирает унаследованные от вендора записи (так пропала
+> строка `f896701`, восстановлена вручную 2026-09-15).
+
 
 ## [0.39.1] — 2026-08-30
 
