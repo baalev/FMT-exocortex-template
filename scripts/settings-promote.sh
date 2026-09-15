@@ -39,7 +39,20 @@ if [[ -z "$HOOK_NAME" || -z "$EVENT" ]]; then
 fi
 
 IWE="${IWE_WORKSPACE:-$HOME/IWE}"
-FMT_DIR="${IWE_TEMPLATE:-$IWE/FMT-exocortex-template}"
+# FMT_DIR: приоритет — явные переменные, иначе расположение самого скрипта.
+# Раньше он брался только из $IWE_WORKSPACE/$HOME/IWE: в чистом окружении
+# (env -i, как в pre-commit PROMOTE-DRY-RUN) и на нестандартном корне рабочего
+# пространства скрипт падал «Не найден …/.claude/settings.json» и блокировал
+# любой коммит в репозитории шаблона.
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+SELF_FMT_DIR="$(cd "$SCRIPT_DIR/.." && pwd)"
+if [[ -n "${IWE_TEMPLATE:-}" ]]; then
+    FMT_DIR="$IWE_TEMPLATE"
+elif [[ -n "${IWE_WORKSPACE:-}" && -d "${IWE_WORKSPACE}/FMT-exocortex-template" ]]; then
+    FMT_DIR="${IWE_WORKSPACE}/FMT-exocortex-template"
+else
+    FMT_DIR="$SELF_FMT_DIR"
+fi
 SETTINGS="$FMT_DIR/.claude/settings.json"
 HOOK_PATH="\$CLAUDE_PROJECT_DIR/.claude/hooks/$HOOK_NAME"
 HOOK_FILE="$FMT_DIR/.claude/hooks/$HOOK_NAME"
