@@ -1085,7 +1085,7 @@
     },
     {
       "path": "generate-manifest.sh",
-      "sha256": "bb4b903b1c152380c2b5fd883b2e20584d794f98531bed0ef6d319a0c274cec3"
+      "sha256": "f289171a1c8022f16b6f1b71146e33865b1afd18005b3c69302581f150f16c8f"
     },
     {
       "path": "guide-kit/.gitignore",
@@ -2749,7 +2749,7 @@
     },
     {
       "path": "scripts/verify-manifest.sh",
-      "sha256": "ac5c9d5578ba825256cb039f3cc9164b3baa63041d5be739d9d863faaa04a5bb"
+      "sha256": "ad954afd897be654ed6604a31a6c04c83820ab9af60374d01cb1768707c94a6e"
     },
     {
       "path": "scripts/week-draft-append.sh",
