@@ -159,7 +159,20 @@ fi
 if [[ -f "$CONTEXT_FILE" ]]; then
   echo "   ℹ️  Файл уже существует (повторный запуск close-wp.sh?), дописываю в него"
 else
-  cat > "$CONTEXT_FILE" <<CTXEOF
+  # 2026-09-15, локальный фикс (реестр кастомов §8.4): файл создавался пустым —
+  # только шапка, без проблемы/артефакта/фаз; полный контекст оставался в
+  # inbox/WP-N. Теперь архивный файл засеивается содержимым inbox-контекста,
+  # пустая шапка — только если inbox-файла нет.
+  INBOX_SRC="$STRATEGY/inbox/WP-${WP_ID}/WP-${WP_ID}.md"
+  if [[ ! -f "$INBOX_SRC" ]]; then
+    INBOX_SRC=$(find "$STRATEGY/inbox" -maxdepth 2 -type f \( -name "WP-${WP_NUM}.md" -o -name "WP-${WP_NUM}-*.md" \) -print 2>/dev/null | sort | head -1)
+  fi
+
+  if [[ -n "${INBOX_SRC:-}" && -f "$INBOX_SRC" ]]; then
+    cp "$INBOX_SRC" "$CONTEXT_FILE"
+    echo "   ✅ Контекст перенесён из inbox: $(basename "$INBOX_SRC") → $(basename "$CONTEXT_FILE")"
+  else
+    cat > "$CONTEXT_FILE" <<CTXEOF
 ---
 wp: ${WP_NUM}
 created: ${TODAY}
@@ -168,7 +181,8 @@ created: ${TODAY}
 # WP-${WP_NUM} — Контекст
 
 CTXEOF
-  echo "   ✅ Создан новый файл: $(basename "$CONTEXT_FILE")"
+    echo "   ⚠️  Контекст не найден (inbox/WP-${WP_ID}) — создан файл с одной шапкой"
+  fi
 fi
 
 # Определить язык файла (русский если есть кириллица в заголовках)
