@@ -263,7 +263,11 @@ if "closed_date:" not in content:
     content = re.sub(r"^(created:.*\n)", r"\1closed_date: " + today + "\n", content,
                      count=1, flags=re.MULTILINE)
 else:
-    content = re.sub(r"^(closed_date:\s*).*$", r"\1" + today, content,
+    # \g<1>, а не \1: иначе "\1" + год склеивается в "\12026..." и Python
+    # читает \120 как восьмеричную escape-последовательность → в файле
+    # появлялась строка "P26-09-15" вместо "closed_date: 2026-09-15"
+    # (артефакт найден 2026-09-15 на WP-005 при повторном закрытии).
+    content = re.sub(r"^(closed_date:\s*).*$", r"\g<1>" + today, content,
                      count=1, flags=re.MULTILINE)
 with open(path, "w", encoding="utf-8") as f:
     f.write(content)

@@ -757,7 +757,7 @@
     },
     {
       "path": "CHANGELOG.md",
-      "sha256": "7295118daa50658a99117e7e0b06556cab52d74812ed263e5ed3ba447744380a"
+      "sha256": "5709874a5685b43a5061376e6fa76e18e3b13b2a4d22b15a71c28e72b9d96936"
     },
     {
       "path": "CLAUDE.md",
@@ -2057,7 +2057,7 @@
     },
     {
       "path": "scripts/close-wp.sh",
-      "sha256": "8a29a10462fb14ac54e3c3c0447765401c96e762ffc2328d8c2781616a918794"
+      "sha256": "da438cf887539a60042f4eb35b6b05ba99a585f88abc2eaad184ad501a2fc232"
     },
     {
       "path": "scripts/codex-peer-adapter.sh",
