@@ -62,7 +62,7 @@ import json
 with open('$TMP_MANIFEST_NATIVE') as f:
     data = json.load(f)
 data['version'] = '$CURRENT_VERSION'
-with open('$TMP_MANIFEST_NATIVE', 'w') as f:
+with open('$TMP_MANIFEST_NATIVE', 'w', newline='\n') as f:
     json.dump(data, f, indent=2, ensure_ascii=False)
     f.write('\n')
 "

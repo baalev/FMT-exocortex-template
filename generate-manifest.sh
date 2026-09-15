@@ -397,7 +397,10 @@ if not data['excluded_paths']:
 if not data['deprecated_files']:
     del data['deprecated_files']
 
-with open('$MANIFEST_NATIVE_GM', 'w', encoding='utf-8') as f:
+# newline='\n': иначе Windows-Python пишет CRLF и манифест перестаёт быть
+# байт-стабильным между платформами (verify-manifest видел расхождение по
+# всему файлу, хотя содержимое совпадало).
+with open('$MANIFEST_NATIVE_GM', 'w', encoding='utf-8', newline='\n') as f:
     json.dump(data, f, indent=2, ensure_ascii=False)
     f.write('\n')
 "
