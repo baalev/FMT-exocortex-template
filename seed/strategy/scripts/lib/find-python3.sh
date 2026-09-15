@@ -18,9 +18,12 @@ set -u
 
 candidates=(
     python3
+    python
     /opt/homebrew/bin/python3
     /usr/local/bin/python3
     /usr/bin/python3
+    /c/Python314/python
+    C:/Python314/python
 )
 
 for cand in "${candidates[@]}"; do

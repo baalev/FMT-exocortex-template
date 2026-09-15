@@ -30,6 +30,12 @@ GITHUB_API_UNSAFE_CURL_OPTIONS=92
 
 trap 'echo "ОШИБКА: update.sh прервался на строке ${LINENO}: ${BASH_COMMAND}" >&2' ERR
 
+# Windows (LOCAL-CUSTOMIZATIONS.md п. 8.1): native Windows-Python открывает
+# файлы в cp1251 по умолчанию → update-manifest.json (UTF-8) не парсится.
+# PYTHONUTF8=1 безвреден на Unix и чинит манифест при прямом вызове
+# (без обёртки окружения). На Unix переменная не меняет поведение.
+export PYTHONUTF8=1
+
 VERSION="2.4.1"  # fix (WP-401): deprecated-file removal now checks is_protected_user_file() — a protected file (e.g. sessions/00-index.md) listed in deprecated_files by mistake could previously be deleted despite the "Не затрагиваются" report claiming otherwise; fix #229: repair-pass no longer stale-repairs memory files with owner: user in frontmatter; fix #228: hot-budget validator warns when memory/*.md horizon:hot lines exceed threshold
 REPO="TserenTserenov/FMT-exocortex-template" # UPSTREAM-CONST: do not substitute
 BRANCH="main"
@@ -1812,7 +1818,7 @@ github_api_get() {
     if command -v gh >/dev/null 2>&1 && \
        GH_DEBUG='' DEBUG='' GH_PROMPT_DISABLED=1 \
            gh auth status --hostname github.com >/dev/null 2>&1; then
-        endpoint="/${api_url#https://api.github.com/}"
+        endpoint="${api_url#https://api.github.com/}"
         if ! GH_DEBUG='' DEBUG='' GH_PROMPT_DISABLED=1 \
              gh api --hostname github.com --method GET "$endpoint"; then
             echo "ОШИБКА: authenticated GitHub API request via gh failed; fallback disabled." >&2

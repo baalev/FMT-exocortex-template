@@ -1,5 +1,9 @@
 {
   "excluded_paths": [
-    ".gitattributes"
+    ".gitattributes",
+    "scripts/iwe-windows-dispatch.sh",
+    "scripts/iwe-windows-memory-backup.sh",
+    "scripts/iwe-windows-scheduler-env.sh",
+    "scripts/setup-windows-scheduler.ps1"
   ]
 }

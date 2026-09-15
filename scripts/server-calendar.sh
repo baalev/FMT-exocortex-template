@@ -24,6 +24,10 @@
 
 set -uo pipefail
 
+# Windows: консоль по умолчанию cp1251 не кодирует эмодзи при выводе
+# heredoc-блоков Python (UnicodeEncodeError). На Unix переменная безвредна.
+export PYTHONIOENCODING=utf-8
+
 # --- Разбор аргументов ---
 WEEK_MODE=false
 DATE_ARG=""
@@ -40,8 +44,19 @@ for arg in "$@"; do
 done
 
 DATE="${DATE_ARG:-$(date +%Y-%m-%d)}"
-IWE="${IWE_ROOT:-$HOME/IWE}"
+IWE="${IWE_ROOT:-${IWE_WORKSPACE:-$HOME/IWE}}"
+# Windows (Git Bash): IWE_WORKSPACE может прийти в Windows-стиле (Q:\IWE) —
+# нормализуем в /q/IWE, который понимают bash и cygpath-конверсия ниже.
+if command -v cygpath >/dev/null 2>&1 && [[ "$IWE" == [A-Za-z]:\\* || "$IWE" == [A-Za-z]:/* ]]; then
+    IWE="$(cygpath -u "$IWE")"
+fi
 CONFIG="${CONFIG_ARG:-$IWE/DS-strategy/exocortex/day-rhythm-config.yaml}"
+# Windows (Git Bash): Windows-Python не открывает пути вида /q/IWE/...
+# (в heredoc нет MSYS path-translation), поэтому конвертируем в Q:/IWE/...,
+# который Windows-Python понимает. На Unix/Mac cygpath отсутствует — без изменений.
+if command -v cygpath >/dev/null 2>&1 && [[ "$CONFIG" == /* ]]; then
+    CONFIG="$(cygpath -m "$CONFIG")"
+fi
 SECRETS_FILE="${HOME}/.secrets/google-calendar"
 
 # --- Выбираем python3 с PyYAML (общий резолвер, WP-529 F6 / #453 #463) ---
