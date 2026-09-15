@@ -12,6 +12,13 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 MANIFEST="$SCRIPT_DIR/update-manifest.json"
 GENERATOR="$SCRIPT_DIR/generate-manifest.sh"
 
+# Пути для нативного Python (в Git Bash это Windows-Python): путь вида /q/IWE/...
+# он не открывает — нужен Q:/IWE/... (см. scripts/lib/to-native-path.sh).
+# shellcheck source=lib/to-native-path.sh
+. "$SCRIPT_DIR/scripts/lib/to-native-path.sh"
+MANIFEST_NATIVE=$(to_native_path "$MANIFEST")
+SCRIPT_DIR_NATIVE=$(to_native_path "$SCRIPT_DIR")
+
 if [ ! -f "$GENERATOR" ]; then
     echo "ERROR: generate-manifest.sh не найден: $GENERATOR"
     exit 2
@@ -28,7 +35,7 @@ trap 'rm -f "$BACKUP"' EXIT
 cp "$MANIFEST" "$BACKUP"
 
 # Сохраняем версию из текущего манифеста (generate-manifest.sh берёт из CHANGELOG)
-CURRENT_VERSION=$(python3 -c "import json; print(json.load(open('$MANIFEST'))['version'])")
+CURRENT_VERSION=$(python3 -c "import json; print(json.load(open('$MANIFEST_NATIVE'))['version'])")
 
 # Создаём временный манифест через generate-manifest.sh
 TMP_MANIFEST=$(mktemp)
@@ -49,12 +56,13 @@ fi
 cp "$MANIFEST" "$TMP_MANIFEST"
 
 # Восстанавливаем версию в сгенерированном (CHANGELOG может быть "Unreleased")
+TMP_MANIFEST_NATIVE=$(to_native_path "$TMP_MANIFEST")
 python3 -c "
 import json
-with open('$TMP_MANIFEST') as f:
+with open('$TMP_MANIFEST_NATIVE') as f:
     data = json.load(f)
 data['version'] = '$CURRENT_VERSION'
-with open('$TMP_MANIFEST', 'w') as f:
+with open('$TMP_MANIFEST_NATIVE', 'w') as f:
     json.dump(data, f, indent=2, ensure_ascii=False)
     f.write('\n')
 "
@@ -66,7 +74,7 @@ cp "$BACKUP" "$MANIFEST"
 # never intersect the delivered set OR the git-tracked tree — update.sh would
 # delete files the canon still ships with every fresh clone. generate-manifest
 # filters this at write time; this check fails closed on a bad committed one.
-DEP_CONFLICTS=$(python3 - "$MANIFEST" "$SCRIPT_DIR" <<'PYCHECK'
+DEP_CONFLICTS=$(python3 - "$MANIFEST_NATIVE" "$SCRIPT_DIR_NATIVE" <<'PYCHECK'
 import json, subprocess, sys
 m = json.load(open(sys.argv[1]))
 repo_root = sys.argv[2]
@@ -112,13 +120,13 @@ for pair in $PAIRED_DELIVERY; do
     # Обе стороны пары считаем по files[] (доставляемое), не по всему JSON:
     # инструмент, осознанно выведенный из поставки, делает пару вакуумной,
     # а не ложно-нарушенной.
-    t=$(python3 - "$MANIFEST" "$tool" <<'PYCHK'
+    t=$(python3 - "$MANIFEST_NATIVE" "$tool" <<'PYCHK'
 import json, sys
 m = json.load(open(sys.argv[1]))
 print(sum(1 for e in m.get('files', []) if e['path'] == sys.argv[2]))
 PYCHK
 )
-    d=$(python3 - "$MANIFEST" "$datafile" <<'PYCHK'
+    d=$(python3 - "$MANIFEST_NATIVE" "$datafile" <<'PYCHK'
 import json, sys
 m = json.load(open(sys.argv[1]))
 print(sum(1 for e in m.get('files', []) if e['path'] == sys.argv[2]))

@@ -7,6 +7,13 @@ set -e
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 MANIFEST="$SCRIPT_DIR/update-manifest.json"
 
+# Пути для нативного Python (в Git Bash это Windows-Python): /q/... он не
+# открывает, нужен Q:/... (см. scripts/lib/to-native-path.sh).
+# shellcheck source=scripts/lib/to-native-path.sh
+. "$SCRIPT_DIR/scripts/lib/to-native-path.sh"
+SCRIPT_DIR_NATIVE=$(to_native_path "$SCRIPT_DIR")
+MANIFEST_NATIVE_GM=$(to_native_path "$MANIFEST")
+
 # Версия из CHANGELOG.md (первый ## [X.Y.Z])
 VERSION=$(grep -m1 '^\#\# \[[0-9]' "$SCRIPT_DIR/CHANGELOG.md" | sed 's/.*\[\(.*\)\].*/\1/')
 
@@ -309,13 +316,16 @@ DEPRECATED_JSON="[]"
 if [ -f "$MANIFEST" ]; then
     DEPRECATED_JSON=$(python3 -c "
 import json
-with open('$MANIFEST') as f:
+with open('$MANIFEST_NATIVE_GM') as f:
     data = json.load(f)
 print(json.dumps(data.get('deprecated_files', []), ensure_ascii=False))
 ")
 fi
 
 TMPDIR=$(mktemp -d)
+# Путь для нативного Python: mktemp даёт MSYS-путь /tmp/..., Windows-Python его
+# не открывает (см. scripts/lib/to-native-path.sh).
+TMPDIR_NATIVE=$(to_native_path "$TMPDIR")
 # Через printf: построчная запись без bash-array-interpolation внутри строки
 printf '%s\n' "${FILES[@]}" > "$TMPDIR/files.txt"
 printf '%s\n' "${EXCLUDED_PATHS[@]}" > "$TMPDIR/excluded.txt"
@@ -326,9 +336,9 @@ import hashlib
 import json
 from pathlib import Path
 
-files = [line.strip() for line in open('$TMPDIR/files.txt') if line.strip()]
-excluded = [line.strip() for line in open('$TMPDIR/excluded.txt') if line.strip()]
-root = Path('$SCRIPT_DIR')
+files = [line.strip() for line in open('$TMPDIR_NATIVE/files.txt') if line.strip()]
+excluded = [line.strip() for line in open('$TMPDIR_NATIVE/excluded.txt') if line.strip()]
+root = Path('$SCRIPT_DIR_NATIVE')
 
 def manifest_entry(path):
     digest = hashlib.sha256((root / path).read_bytes()).hexdigest()
@@ -359,7 +369,7 @@ delivered_now = {e['path'] for e in data['files']}
 # при сбое git tracked_now молча становился пустым, и фильтр «deprecated ∩
 # дерево» деградировал fail-open. Сбой git = отказ генерации (fail-closed).
 _ls = subprocess.run(
-    ['git', 'ls-files'], capture_output=True, text=True, cwd='$SCRIPT_DIR'
+    ['git', 'ls-files'], capture_output=True, text=True, cwd='$SCRIPT_DIR_NATIVE'
 )
 if _ls.returncode != 0:
     sys.exit('generate-manifest: git ls-files failed: ' + _ls.stderr.strip())
@@ -387,7 +397,7 @@ if not data['excluded_paths']:
 if not data['deprecated_files']:
     del data['deprecated_files']
 
-with open('$MANIFEST', 'w', encoding='utf-8') as f:
+with open('$MANIFEST_NATIVE_GM', 'w', encoding='utf-8') as f:
     json.dump(data, f, indent=2, ensure_ascii=False)
     f.write('\n')
 "

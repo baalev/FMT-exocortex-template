@@ -5,6 +5,14 @@
 
 ISSUES=0
 
+# === Content changes vs mode-only changes ===
+# chmod-коммит (100644 → 100755) не несёт содержимого, но по имени файла
+# попадает во все проверки «staged»: валидация шаблона гоняется по всему
+# дереву скриптов и на одном изменении режимов занимает часы (найдено
+# 2026-09-15 при коммите исполнимости 318 .sh). CONTENT_CHANGES пусто →
+# тяжёлые content-проверки пропускаем; проверка режимов остаётся.
+CONTENT_CHANGES=$(git diff --cached --numstat 2>/dev/null | awk '$1 != 0 || $2 != 0' | head -1)
+
 # === Block secrets file from being committed ===
 if git diff --cached --name-only 2>/dev/null | grep -q '\.exocortex\.env'; then
     echo "SECURITY: .exocortex.env is staged for commit — this file contains secrets!"
@@ -195,7 +203,7 @@ if [ -z "${TEMPLATE_DIR:-}" ]; then
   fi
   unset _repo_root _env_file
 fi
-if [ -n "$STAGED_TEMPLATE" ] && [ -x "setup/validate-template.sh" ]; then
+if [ -n "$STAGED_TEMPLATE" ] && [ -n "${CONTENT_CHANGES:-}" ] && [ -x "setup/validate-template.sh" ]; then
     # --mode=staged: проверяет только staged файлы. Предотвращает ложные блокировки
     # от unstaged WIP параллельных агентов (мультиагентная среда IWE). CI использует pristine.
     if ! bash setup/validate-template.sh --mode=staged ${TEMPLATE_DIR:+"$TEMPLATE_DIR"} >/tmp/iwe-validate.$$ 2>&1; then

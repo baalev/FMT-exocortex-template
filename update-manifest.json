@@ -700,6 +700,10 @@
       "sha256": "54356facf8d596bad78889791927b0d8977d75a836cffbcc184d7611905af673"
     },
     {
+      "path": ".gitattributes",
+      "sha256": "4dfff63335fafef85540c7f9f236b4a654367614a49ab2da4e3ec604e812a814"
+    },
+    {
       "path": ".githooks/commit-msg",
       "sha256": "f8507693252517c89deb4b963cdd499aa570dbba6663cb62a2ca4db1f8e2f6b9"
     },
@@ -709,7 +713,7 @@
     },
     {
       "path": ".githooks/pre-commit",
-      "sha256": "1097b690e58456f673e180cae712182ce8298e4b7546ad91c42c82116a4c9652"
+      "sha256": "e00fc3ca3737de6ff96787ae2604cbc38f5e643bb5963b083f8954a93a583d2a"
     },
     {
       "path": ".github/workflows/cloud-scheduler.yml",
@@ -753,7 +757,7 @@
     },
     {
       "path": "CHANGELOG.md",
-      "sha256": "60a3b423a021e51e607ddf941eb409475541f781b561901cc1470fa89065c0b2"
+      "sha256": "7295118daa50658a99117e7e0b06556cab52d74812ed263e5ed3ba447744380a"
     },
     {
       "path": "CLAUDE.md",
@@ -1081,7 +1085,7 @@
     },
     {
       "path": "generate-manifest.sh",
-      "sha256": "21463b0ddacde3ed8b9df6649e9d0d949c57c6b7c83a849a01cbf00555a835fd"
+      "sha256": "bb4b903b1c152380c2b5fd883b2e20584d794f98531bed0ef6d319a0c274cec3"
     },
     {
       "path": "guide-kit/.gitignore",
@@ -2053,7 +2057,7 @@
     },
     {
       "path": "scripts/close-wp.sh",
-      "sha256": "1708ba2d92f31e0770ceff9847ddfd1012776f28302134704e1fd91caa02ba92"
+      "sha256": "8a29a10462fb14ac54e3c3c0447765401c96e762ffc2328d8c2781616a918794"
     },
     {
       "path": "scripts/codex-peer-adapter.sh",
@@ -2352,6 +2356,10 @@
       "sha256": "4c5c0546b87a7bbe6dbff6af7ca011c561a1c2f5a2e5db4c4fedcd183bc9de3e"
     },
     {
+      "path": "scripts/lib/to-native-path.sh",
+      "sha256": "85b3fb40c80201052e529d6b7a30bd665d3d1b94fa11596129f7f0330cc91de8"
+    },
+    {
       "path": "scripts/lib/wp_inbox.py",
       "sha256": "c22ac737ed5a35131f0ed45518f071deaa3c89c0e100a85d8b9114250210ec6d"
     },
@@ -2457,7 +2465,7 @@
     },
     {
       "path": "scripts/settings-promote.sh",
-      "sha256": "20b3e2bdadc0439b5920f5f788a04794b14e21d89a38a1f23901bd020fa80df8"
+      "sha256": "12636571193c9542da711675203c90db6600820a5b956e5235caacaa42b1a7de"
     },
     {
       "path": "scripts/setup-extractor-feeders.sh",
@@ -2741,7 +2749,7 @@
     },
     {
       "path": "scripts/verify-manifest.sh",
-      "sha256": "5d2a58223e9c4d52bb0254a781b03c650142d166e900935f6c88b7d610221a97"
+      "sha256": "ac5c9d5578ba825256cb039f3cc9164b3baa63041d5be739d9d863faaa04a5bb"
     },
     {
       "path": "scripts/week-draft-append.sh",

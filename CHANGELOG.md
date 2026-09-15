@@ -160,6 +160,9 @@ Refs: WP-NNN
 
 - `bc56762` Add .gitattributes: keep bash scripts with LF
 - `032c7c7` Initial import of FMT-exocortex-template
+- `pre-commit`: content-проверки шаблона пропускаются, когда в коммите нет изменённых строк (смена режима файла, например chmod 644→755). Раньше такой коммит запускал полную валидацию всего дерева скриптов — на 318 файлах это часы
+- `verify-manifest.sh` и `generate-manifest.sh`: пути для нативного Python конвертируются через `scripts/lib/to-native-path.sh` (в Git Bash на Windows путь `/q/...` для системного Python не существует — обе проверки падали)
+- `update-manifest.json` перегенерирован: хэши закоммиченных файлов + `.gitattributes` в поставке
 
 > Внимание: `scripts/changelog-append.sh` перегенерирует блок [Unreleased] из истории
 > локального репозитория и затирает унаследованные от вендора записи (так пропала
