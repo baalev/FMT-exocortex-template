@@ -118,6 +118,14 @@ $H
 "
 done
 if [ -n "$HITS" ]; then echo "$HITS"; else echo "(no drift patterns found)"; fi
+# Структурная часть шага 4б: сверка колонки «Статус» MEMORY.md с полем
+# `status` карточки РП (issue #326). Лексический grep выше её не заменяет.
+MDS="$IWE_TEMPLATE/.claude/scripts/memory-drift-scan.py"
+if [ -f "$MDS" ]; then
+  python3 "$MDS" 2>&1 | head -20 || true
+else
+  echo "skip: memory-drift-scan.py not found"
+fi
 
 echo "--- 5. INDEX HEALTH ---"
 IH="$IWE_TEMPLATE/.claude/scripts/check-index-health.py"

@@ -20,9 +20,11 @@ pending/in_progress/done) или сокращённое «ст» (пользов
 Usage:
     memory-drift-scan.py [--memory PATH] [--governance-repo PATH]
 
---memory: путь к MEMORY.md (default: ~/IWE/memory/MEMORY.md)
+--memory: путь к MEMORY.md
+    (default: <workspace>/memory/MEMORY.md, где <workspace> — IWE_WORKSPACE /
+    WORKSPACE_DIR, затем ~/IWE)
 --governance-repo: корень governance-репо, где искать inbox/WP-N/
-    (default: ~/IWE/DS-strategy, переопределяется $IWE_GOVERNANCE_REPO)
+    (default: <workspace>/$IWE_GOVERNANCE_REPO или <workspace>/DS-strategy)
 
 Exit code:
     0 — дрейфов не найдено
@@ -220,22 +222,56 @@ def scan(memory_path: Path, governance_repo: Path) -> list[str]:
     return drifts
 
 
+def _as_path(value: str) -> Path:
+    """MSYS-путь (`/q/IWE`, `/c/Users/...`) → Windows-путь для нативного Python.
+
+    Агент запускает скрипт из Git Bash, где IWE_WORKSPACE может быть записан
+    в POSIX-форме; нативный Python такую строку как абсолютный путь не
+    понимает. Windows-путь (`Q:\\\\IWE`) возвращается как есть.
+    """
+    if os.name == "nt" and re.match(r"^/[a-zA-Z]/", value):
+        drive = value[1].upper()
+        rest = value[2:].replace("/", "\\")
+        return Path(f"{drive}:{rest}")
+    return Path(value)
+
+
+def resolve_workspace_root() -> Path:
+    """Корень рабочего пространства: IWE_WORKSPACE / WORKSPACE_DIR → ~/IWE.
+
+    Windows-дефект (issue #834): рабочее пространство может лежать вне
+    домашнего каталога (напр. Q:\\IWE), тогда ~/IWE не существует, скрипт
+    падал с exit 2, и шаг Day Close 4б молча помечался skip — структурная
+    проверка не выполнялась ни разу с момента установки.
+    """
+    for var in ("IWE_WORKSPACE", "WORKSPACE_DIR"):
+        value = os.environ.get(var)
+        if value:
+            return _as_path(value)
+    return Path.home() / "IWE"
+
+
 def main() -> int:
+    workspace_root = resolve_workspace_root()
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument(
         "--memory",
         type=Path,
-        default=Path.home() / "IWE" / "memory" / "MEMORY.md",
+        default=workspace_root / "memory" / "MEMORY.md",
     )
     parser.add_argument(
         "--governance-repo",
         type=Path,
-        default=Path.home() / "IWE" / os.environ.get("IWE_GOVERNANCE_REPO", "DS-strategy"),
+        default=workspace_root / os.environ.get("IWE_GOVERNANCE_REPO", "DS-strategy"),
     )
     args = parser.parse_args()
 
     if not args.memory.is_file():
         print(f"FAIL: MEMORY.md не найден: {args.memory}", file=sys.stderr)
+        print(
+            "  Задайте IWE_WORKSPACE / WORKSPACE_DIR или передайте --memory.",
+            file=sys.stderr,
+        )
         return 2
 
     drifts = scan(args.memory, args.governance_repo)
