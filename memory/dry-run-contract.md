@@ -162,7 +162,7 @@ sed-подмена литерального (нераскрытого на мо�
 
 `day-close-prepare.sh` (issue #315) — read-only дайджест-оркестратор шага 0б
 Day Close (см. код: только `git log`/`grep`/`ls`/`wc`/`python3 <script>`/
-`wakatime-cli --today`, ни одного write-пути — redirect в файл, `tee`, `sed -i`,
+`custom/kanban/kanban-time.sh day`, ни одного write-пути — redirect в файл, `tee`, `sed -i`,
 `git add|commit|push`, `rm`/`mv` в коде отсутствуют). До фикса узкий whitelist
 (только `load-extensions.sh`) блокировал его как «indirect execution», хотя
 сам гейт срабатывает по факту записи — smoke-тест ритуала терял точность,

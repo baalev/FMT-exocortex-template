@@ -8,7 +8,7 @@ changelog / статус / контекст сущности — в source-of-tr
 Usage:
     check-index-health.py [ROOT]
 
-ROOT: корень скана (default: ~/IWE).
+ROOT: корень скана (default: $IWE_WORKSPACE / $WORKSPACE_DIR → ~/IWE).
 
 Exit code:
     0 — все OK
@@ -32,6 +32,7 @@ CATALOG.md, TOC.md, MAPSTRATEGIC.md, Projects.md, *-registry.md, *-index.md,
 """
 from __future__ import annotations
 
+import os
 import re
 import sys
 from pathlib import Path
@@ -203,10 +204,38 @@ def fmt_file_line(path: Path, root: Path, findings: dict) -> str:
     return "  " + "  ".join(parts)
 
 
+def resolve_root(argv) -> tuple[Path, list[Path]]:
+    """Корень скана: argv[1] → IWE_WORKSPACE / WORKSPACE_DIR → ~/IWE.
+
+    Windows-дефект (issue #834): рабочее пространство может лежать вне
+    домашнего каталога (напр. Q:\\IWE), тогда ~/IWE не существует и скрипт
+    падал с exit 2 — шаг Day Close помечался skip, хотя проверка возможна.
+    Возвращает выбранный путь и список проверенных кандидатов.
+    """
+    if len(argv) > 1:
+        return Path(argv[1]), [Path(argv[1])]
+
+    candidates: list[Path] = []
+    for var in ("IWE_WORKSPACE", "WORKSPACE_DIR"):
+        value = os.environ.get(var)
+        if value:
+            candidates.append(Path(value))
+    home_candidate = Path.home() / "IWE"
+    if home_candidate not in candidates:
+        candidates.append(home_candidate)
+
+    for candidate in candidates:
+        if candidate.is_dir():
+            return candidate, candidates
+    return candidates[0], candidates
+
+
 def main() -> int:
-    root = Path(sys.argv[1]) if len(sys.argv) > 1 else Path.home() / "IWE"
+    root, candidates = resolve_root(sys.argv)
     if not root.is_dir():
-        print(f"FAIL: root dir not found: {root}", file=sys.stderr)
+        tried = ", ".join(str(c) for c in candidates)
+        print(f"FAIL: root dir not found (tried: {tried})", file=sys.stderr)
+        print("  Задайте IWE_WORKSPACE или передайте путь аргументом.", file=sys.stderr)
         return 2
 
     buckets = {"FAIL": [], "WARN": [], "OK": [], "SKIP": []}

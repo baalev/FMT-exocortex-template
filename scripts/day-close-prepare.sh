@@ -3,7 +3,7 @@
 # see DP.SC.159, DP.ROLE.059
 # day-close-prepare.sh — one-call data digest for the Day Close protocol (issue #234).
 # Replaces ~10 separate agent round-trips (commit scan, drift scan, index health,
-# lesson stats, WakaTime, dirty repos) with a single compact digest, so Day Close
+# lesson stats, Канбан (физическое время), dirty repos) with a single compact digest, so Day Close
 # cost does not scale with the size of the day's conversation.
 #
 # Usage:
@@ -137,11 +137,12 @@ for m in $(memory_files); do
   echo "MEMORY.md: $LINES lines (flag if >200), $LESSONS lesson references (target ≤8)"
 done
 
-echo "--- 7. WAKATIME ---"
-if [ -x "$HOME/.wakatime/wakatime-cli" ]; then
-  "$HOME/.wakatime/wakatime-cli" --today 2>/dev/null || echo "(CLI error — use Neon fallback: domain_event coding_time)"
+echo "--- 7. КАНБАН (физическое время) ---"
+KANBAN_HELPER="$WORKSPACE_DIR/custom/kanban/kanban-time.sh"
+if [ -x "$KANBAN_HELPER" ]; then
+  bash "$KANBAN_HELPER" day "$TODAY" 2>/dev/null || echo "(Канбан недоступен — проверить .secrets/kanban-mcp.env)"
 else
-  echo "(CLI not installed — use Neon fallback: domain_event coding_time, or mark 'pending Neon')"
+  echo "(помощник custom/kanban/kanban-time.sh не найден — источник физического времени не настроен)"
 fi
 
 echo "--- 8. PEER SESSIONS TODAY ---"
