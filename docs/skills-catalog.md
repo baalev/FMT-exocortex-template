@@ -23,7 +23,7 @@
 | `/extend` | IWE extensibility catalog: what can be customized, which extension points exist, which parameters are availab… |
 | `/fpf` | Загрузка применимых принципов для задачи из иерархии Pack → SPF → FPF. Используй когда нужно найти релевантны… |
 | `/integration-gate` | IntegrationGate — обязательный чеклист (4 шага) при проектировании нового инструмента, агента, детектора или… |
-| `/iwe-bug-report` | Сообщить об ошибке или проблеме платформы IWE. Создаёт GitHub issue в FMT-exocortex-template. |
+| `/iwe-bug-report` | Сообщить об ошибке платформы IWE. По умолчанию готовит отчёт локально и показывает пилоту; отправка вендору — только по явному одобрению (гейт). |
 | `/iwe-restore` | Восстановление памяти агента из exocortex-бэкапа при переезде на новое устройство. Находит DS-strategy/exocor… |
 | `/iwe-rules-review` | Weekly review of IWE work culture (element 14 — System Evolution). Runs during Week Close. |
 | `/iwe-update` | Update IWE with change explanations. Agent calls update.sh, parses CHANGELOG, explains what changed, helps ad… |

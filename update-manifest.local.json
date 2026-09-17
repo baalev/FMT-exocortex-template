@@ -1,6 +1,7 @@
 {
   "excluded_paths": [
     ".gitattributes",
+    ".claude/hooks/upstream-issue-gate.sh",
     "scripts/iwe-windows-dispatch.sh",
     "scripts/iwe-windows-memory-backup.sh",
     "scripts/iwe-windows-scheduler-env.sh",

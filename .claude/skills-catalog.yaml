@@ -255,7 +255,7 @@ skills:
     - integration-gate
   - id: iwe-bug-report
     name: "iwe-bug-report"
-    description: "Сообщить об ошибке или проблеме платформы IWE. Создаёт GitHub issue в FMT-exocortex-template."
+    description: "Сообщить об ошибке платформы IWE. По умолчанию готовит отчёт локально и показывает пилоту; отправка вендору — только по явному одобрению (гейт)."
     version: 1.0.0
     layer: L1
     status: active

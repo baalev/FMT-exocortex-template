@@ -67,7 +67,7 @@ skills:
   - name: iwe-bug-report
     browser: true
     keywords: ["bug", "баг", "ошибка платформы", "report bug", "сообщить об ошибке"]
-    description: "Report a platform bug to FMT-exocortex-template GitHub issue."
+    description: "Report a platform bug locally; upstream FMT issue only with explicit pilot approval (gated)."
 
   - name: bottleneck-pick
     browser: true
