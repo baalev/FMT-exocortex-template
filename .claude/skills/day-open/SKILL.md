@@ -99,7 +99,7 @@ Day Open = протокол. Блокирующее требование — н�
 > ⚠️ **Перед шагами 7a и 7d:** `Read .claude/skills/day-open/templates.md`. Файл не найден → сообщить пилоту, не продолжать.
 > Прочитать `params.yaml → multiplier_enabled` (нет ключа = `true`). При
 > `false` выбрать только ветки `multiplier:off`: не выводить физическое время,
-> WakaTime, плановый/фактический мультипликатор и соответствующую подсекцию Week Close.
+> Канбан, плановый/фактический мультипликатор и соответствующую подсекцию Week Close.
 
 **7a.** DayPlan: `<governance-repo>/current/DayPlan YYYY-MM-DD.md` по шаблону из `templates.md`. Предыдущий → `archive/day-plans/`.
 **7a2.** Session Log: `<governance-repo>/sessions/YYYY-MM-DD.md`. Если существует — не перезаписывать.

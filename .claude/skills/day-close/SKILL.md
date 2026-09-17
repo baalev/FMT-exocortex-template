@@ -82,9 +82,9 @@ Day Close = протокол. Блокирующее требование — н
 ### 6. Мультипликатор IWE
 > Условный шаг: если `params.yaml → multiplier_enabled: false` → пропустить и
 > при записи итогов выбрать только ветку `multiplier:off` из шаблона. Не добавлять
-> WakaTime, физическое время, формулу или заглушку «мультипликатор не посчитан».
+> Канбан, физическое время, формулу или заглушку «мультипликатор не посчитан».
 
-WakaTime CLI (`~/.wakatime/wakatime-cli --today`) или Neon-fallback → Бюджет ПО ФАКТУ / WakaTime = мультипликатор `N.Nx`. Prerequisite: прочитать `sessions/00-index.md` (grep сегодня) → список peer-сессий с числом ходов. Sanity check: <1.5x при ≥10 peer-сессий → пересчитать.
+Канбан (`bash "$IWE_WORKSPACE/custom/kanban/kanban-time.sh" day`) → Бюджет ПО ФАКТУ / Канбан = мультипликатор `N.Nx`. Prerequisite: прочитать `sessions/00-index.md` (grep сегодня) → список peer-сессий с числом ходов. Sanity check: <1.5x при ≥10 peer-сессий → пересчитать.
 <!-- Детали: day-close-details.md § Шаг 6 -->
 
 ### 7. Черновик итогов (показать пользователю)
@@ -293,7 +293,7 @@ Sub-agent Haiku R23 (context isolation): передать чеклист + че�
 - [ ] Backup: `day-close.sh` выполнен
 - [ ] **Rule-engine FP-stats** (WP-272 Ф2.5): `[ -f ~/IWE/.claude/scripts/fp-stats.py ] && python3 ~/IWE/.claude/scripts/fp-stats.py --date $(date +%Y-%m-%d) || echo "skip: fp-stats.py требует rule-classifier.py"` → если есть `⚠️ REVISE` → **спросить пилота по факту флага** (WP-545 Ф5, 21.08 — заменяет прежний еженедельный R8-вопрос, который спрашивал вслепую по расписанию, не по конкретному сигналу): «правило `<X>` — это ложные срабатывания детектора, или реальный, но неудобный сигнал?» Ответ → в «Завтра начать с» вместе с решением (переформулировать правило / оставить как есть)
 - [ ] Верификация compliance: /verify запускался сегодня?
-- [ ] WakaTime + Мультипликатор: часы / бюджет ПО ФАКТУ (sessions/00-index.md перечислен; ad-hoc оценены по ходам; сверхплановое — по факту); sanity check ≥10 peer-сессий
+- [ ] Канбан + Мультипликатор: часы / бюджет ПО ФАКТУ (sessions/00-index.md перечислен; ad-hoc оценены по ходам; сверхплановое — по факту); sanity check ≥10 peer-сессий
 - [ ] Итоги дня записаны в DayPlan **(postcondition 9a: grep подтверждён)** — **N/A на strategy_day** (шаг 0в)
 - [ ] Handoff-валидация: «Завтра начать с» содержит ВСЕ pending РП с конкретным next action — **N/A на strategy_day** (шаг 0в; на strategy_day это поле живёт в WeekPlan, не DayPlan)
 - [ ] Сводка итогов записана в WeekReport (`<details>`, обратная хронология) **(postcondition 9b: grep подтверждён)**

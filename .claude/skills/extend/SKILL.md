@@ -86,7 +86,7 @@ point. Используйте один из явно перечисленных 
 | Параметр | Протокол | Default | Описание |
 |----------|----------|---------|----------|
 | `video_check` | Day Open | `true` | Проверка видео за предыдущий день |
-| `multiplier_enabled` | Day Close | `true` | Расчёт мультипликатора IWE (требует WakaTime) |
+| `multiplier_enabled` | Day Close | `true` | Расчёт мультипликатора IWE (источник — Канбан) |
 | `reflection_enabled` | Day Close | `false` | Рефлексия дня через `day-close.after.md` |
 | `lesson_rotation` | Week Close | `true` | Ротация уроков в MEMORY.md |
 | `auto_verify_code` | Quick Close | `true` | Автоверификация кода sub-agent Haiku |

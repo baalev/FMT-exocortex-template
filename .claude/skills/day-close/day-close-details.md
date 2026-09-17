@@ -19,7 +19,7 @@
 | 4 memory drift hits | шаг 4б — grep |
 | 5 index health | шаг 4в — запуск `check-index-health.py` |
 | 6 lesson/memory stats | шаг 4 — скан |
-| 7 WakaTime | шаг 6 |
+| 7 Канбан (время дня) | шаг 6 |
 | 8 peer sessions today | шаг 6 prerequisite (`sessions/00-index.md`) |
 | 9 DayPlans в current/ | шаг 3 — lookup |
 | 10 done WP contexts в inbox/ | шаг 3 — lookup |
@@ -145,10 +145,9 @@ PY3="$(bash "$T/.claude/lib/find-python3.sh")" && "$PY3" "$T/.claude/scripts/che
 
 ## Шаг 6: Мультипликатор IWE — алгоритм
 
-1. **WakaTime** — физическое время за день:
-   - CLI: `~/.wakatime/wakatime-cli --today`
-   - Fallback Neon: `SELECT payload->>'human_readable', payload->>'total_seconds' FROM learning.public.domain_event WHERE event_type='coding_time' AND account_id='{DT_USER_ID}' AND external_id='wakatime:{DT_USER_ID}:{YYYY-MM-DD}'`
-   - Если Neon тоже пуст → пометить «pending Neon», пересчитать при следующей сессии
+1. **Канбан** — физическое время за день (источник вместо WakaTime):
+   - `bash "$IWE_WORKSPACE/custom/kanban/kanban-time.sh" day {YYYY-MM-DD}` → строки `seconds/hours/human/pomodoros` (инструмент `day_worklog` MCP-сервера «Канбан»)
+   - Адрес и креды — `.secrets/kanban-mcp.md`; база недоступна → пометить «Канбан недоступен», пересчитать позже
 
 2. **Бюджет закрыт — считать ПО ФАКТУ (БЛОКИРУЮЩЕЕ):**
    - **Шаг 2.0 (prerequisite):** открыть `<governance-repo>/sessions/00-index.md`, отфильтровать строки за сегодня (`grep "$(date +%Y-%m-%d)"`), составить полный список peer-сессий с числом ходов. Без этого расчёт занижен ×2.
@@ -161,7 +160,7 @@ PY3="$(bash "$T/.claude/lib/find-python3.sh")" && "$PY3" "$T/.claude/scripts/che
      - 8+ ходов → 1-1.5h
    - Мелкие правки без peer-сессии (бюджет «—» / merged) → 0.25h
 
-3. **Мультипликатор дня** = Бюджет закрыт / WakaTime. Формат: `N.Nx`
+3. **Мультипликатор дня** = Бюджет закрыт / Канбан (физические часы). Формат: `N.Nx`
 
 4. **Sanity check (БЛОКИРУЮЩЕЕ):** мультипликатор <1.5x при ≥10 peer-сессий → пересчитать. Показать пилоту 3 метода (буква SKILL / по факту / компромисс) и спросить какой записывать.
    Урок: `lessons_multiplier_peer_sessions_uncounted.md`

@@ -62,7 +62,7 @@ fi
 - Поля: `event_type, payload, occurred_at, account_id`
 - Фильтр: `account_id = %s::uuid` (значение из `DT_USER_ID` env)
 - Результат: список событий (например 30-50 событий за неделю — activity-hub записи)
-- Форматирование для контекста: summary **в 3-5 пунктов** (пример: «5 РП открыто, 2 РП закрыто, 15+ коммитов, WakaTime ~32h, день-close 4 раза»)
+- Форматирование для контекста: summary **в 3-5 пунктов** (пример: «5 РП открыто, 2 РП закрыто, 15+ коммитов, Канбан ~32h, день-close 4 раза»)
 
 **2c) RCS профиль пилота (baseline + confidence):**
 - Источник: Neon БД `indicators.calculated_profile`
