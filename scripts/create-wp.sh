@@ -24,11 +24,21 @@
 # Предусловие: consent state file должен существовать:
 #   touch ${IWE_ROOT:-$HOME/IWE}/.claude/state/wp-consent-{N}
 #
+# Корень пространства: IWE_ROOT → IWE_WORKSPACE → WORKSPACE_DIR → ~/IWE.
+# На Windows workspace может лежать вне домашней папки (напр. Q:\IWE), тогда
+# ~/IWE не существует, реестр не читается и следующим номером РП становится 1 —
+# молчаливая попытка создать дубликат WP-1. Тот же порядок, что в server-calendar.sh.
+#
 # Совместимость: bash 3.2+ (macOS), bash 4+ (Linux)
 
 set -uo pipefail
 
-IWE="${IWE_ROOT:-$HOME/IWE}"
+# UTF-8 для дочерних Python-процессов: сниппеты печатают ✅/🚫, на cp1251-Windows
+# это UnicodeEncodeError и откат уже сделанных записей (реестр кастомов §8.1).
+export PYTHONUTF8=1
+export PYTHONIOENCODING=utf-8
+
+IWE="${IWE_ROOT:-${IWE_WORKSPACE:-${WORKSPACE_DIR:-$HOME/IWE}}}"
 
 # --- Определить governance-репо ---
 # Приоритет: (1) явная переменная IWE_GOVERNANCE_REPO → (2) DS-strategy (конвенция по умолчанию)
@@ -198,6 +208,16 @@ if [[ -n "$STATE" && -n "${STATE_AXES:-}" ]]; then
   if [[ -n "$HYPOTHESIS" && "$HYPOTHESIS" != "—" ]]; then
     STAKE_CELL="${STAKE_CELL} · ${HYPOTHESIS}"
   fi
+fi
+
+# --- Проверка реестра: без него нумерация бессмысленна ---
+# Дефект: при неверном корне пространства Python не мог открыть реестр, молча
+# возвращал 1 — и создавался дубликат WP-1. Теперь это явная ошибка с подсказкой.
+if [[ ! -f "$REGISTRY" ]]; then
+  echo "❌ Не найден реестр РП: $REGISTRY" >&2
+  echo "   Корень пространства определён как: $IWE" >&2
+  echo "   Задайте IWE_ROOT или IWE_WORKSPACE (текущее значение: ${IWE_WORKSPACE:-не задано})" >&2
+  exit 1
 fi
 
 # --- Найти следующий номер WP ---
