@@ -27,12 +27,16 @@ bash .claude/scripts/load-extensions.sh iwe-update before
 ошибка обязательного шага расширения → обновление не начинать, показать
 настоящую причину ошибки.
 
+> **Обновление — только вручную (реестр §7.1, решение пилота 2026-09-18).** Скилл
+> запускается по явной просьбе пилота. `update.sh` отказывает без переменной
+> `IWE_ALLOW_TEMPLATE_UPDATE=1`; применение идёт через обёртку — она восстанавливает кастомы.
+
 ### 1. Превью (--check)
 
 Запустить update.sh в режиме превью:
 
 ```bash
-cd "$IWE_TEMPLATE" && bash update.sh --check 2>&1
+IWE_ALLOW_TEMPLATE_UPDATE=1 bash "$IWE_TEMPLATE/update.sh" --check 2>&1
 ```
 
 Из вывода извлечь:
@@ -97,7 +101,7 @@ ls extensions/*.md 2>/dev/null
 Если пользователь одобрил (или `--yes`):
 
 ```bash
-cd "$IWE_TEMPLATE" && bash update.sh --yes 2>&1
+IWE_ALLOW_TEMPLATE_UPDATE=1 bash /q/IWE/custom/update-with-custom.sh --yes 2>&1
 ```
 
 Из вывода извлечь результат:
@@ -166,5 +170,5 @@ bash .claude/scripts/load-extensions.sh iwe-update after
 
 ## Автоматическое предложение обновления
 
-При Day Open (шаг 5: IWE за ночь) — если `update.sh --check` показывает доступные обновления → добавить в «Требует внимания»:
-> «Доступно обновление IWE v{new}. Запустите `/iwe-update` для обновления.»
+Day Open больше НЕ проверяет обновления (автообновление запрещено, реестр §7.1). Предложение появляется только когда пилот сам запускает скилл:
+> «Обновление IWE — только вручную. Запуск из терминала: `IWE_ALLOW_TEMPLATE_UPDATE=1 bash /q/IWE/custom/update-with-custom.sh`.»
